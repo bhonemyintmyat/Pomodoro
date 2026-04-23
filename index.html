@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pomodoro Timer</title>
+  <style>
+    :root {
+      --text: #f7f6fb;
+      --glass-bg: rgba(255, 255, 255, 0.14);
+      --glass-border: rgba(255, 255, 255, 0.28);
+      --btn-bg: rgba(255, 255, 255, 0.2);
+      --btn-bg-hover: rgba(255, 255, 255, 0.3);
+      --input-bg: rgba(255, 255, 255, 0.22);
+      --gradient: linear-gradient(130deg, #d6c8ff, #b8e5ff, #ffd6e7, #d2f5dc);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: var(--gradient);
+      background-size: 250% 250%;
+      animation: drift 14s ease-in-out infinite;
+      overflow: hidden;
+      transition: background 350ms ease;
+    }
+
+    body.night {
+      --text: #e9efff;
+      --glass-bg: rgba(20, 28, 54, 0.35);
+      --glass-border: rgba(194, 214, 255, 0.26);
+      --btn-bg: rgba(143, 170, 236, 0.2);
+      --btn-bg-hover: rgba(143, 170, 236, 0.35);
+      --input-bg: rgba(120, 145, 210, 0.22);
+      --gradient: linear-gradient(130deg, #1c2344, #263560, #162947, #3d2d5b);
+    }
+
+    @keyframes drift {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .card {
+      width: min(90vw, 420px);
+      border-radius: 24px;
+      padding: 2rem;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 20px 50px rgba(20, 20, 40, 0.25);
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 1rem;
+      font-size: 1.45rem;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+    }
+
+    .time {
+      margin: 0.3rem 0 1.3rem;
+      font-size: clamp(2.8rem, 10vw, 4.2rem);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 1px;
+      text-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+
+    .setup {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.55rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .setup label {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .setup input,
+    .setup select {
+      width: 4.2rem;
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      border-radius: 999px;
+      padding: 0.5rem 0.8rem;
+      color: #fff;
+      background: var(--input-bg);
+      outline: none;
+      text-align: center;
+    }
+
+    .setup select {
+      width: 10.8rem;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .setup input::placeholder,
+    .setup select::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .flashlight {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.05) 65%);
+      transition: opacity 120ms ease;
+      z-index: 3;
+    }
+
+    .flashlight.active {
+      animation: flashPulse 300ms ease-in-out 8;
+    }
+
+    @keyframes flashPulse {
+      0% {
+        opacity: 0;
+      }
+      45% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+
+    button {
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 999px;
+      padding: 0.7rem 1.1rem;
+      color: #fff;
+      background: var(--btn-bg);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 150ms ease, transform 120ms ease;
+    }
+
+    button:hover {
+      background: var(--btn-bg-hover);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .hint {
+      margin-top: 1.2rem;
+      opacity: 0.88;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="flashlight" id="flashlight" aria-hidden="true"></div>
+  <main class="card">
+    <h1>Pomodoro Timer</h1>
+    <div class="setup">
+      <label for="hoursInput">H</label>
+      <input id="hoursInput" type="number" min="0" max="23" value="0" />
+      <label for="minutesInput">M</label>
+      <input id="minutesInput" type="number" min="0" max="59" value="25" />
+      <label for="secondsInput">S</label>
+      <input id="secondsInput" type="number" min="0" max="59" value="0" />
+      <select id="ringtoneSelect" aria-label="Alarm ringtone">
+        <option value="radar">Radar</option>
+        <option value="seaside">By the Seaside</option>
+        <option value="chime">Classic Chime</option>
+      </select>
+      <button id="applyBtn">Apply</button>
+      <button id="themeBtn">Night Mode</button>
+    </div>
+    <p class="time" id="time" aria-live="polite">00:25:00</p>
+    <div class="controls">
+      <button id="startBtn">Start</button>
+      <button id="pauseBtn">Pause</button>
+      <button id="resetBtn">Reset</button>
+      <button id="dingBtn">Test Alarm</button>
+    </div>
+    <p class="hint" id="hint">Session length: 0h 25m 0s</p>
+  </main>
+
+  <script>
+    const DEFAULT_DURATION = { hours: 0, minutes: 25, seconds: 0 };
+    let selectedDuration = { ...DEFAULT_DURATION };
+    let remaining = toTotalSeconds(selectedDuration);
+    let isNight = false;
+    let intervalId = null;
+    let flashTimeoutId = null;
+    let alarmIntervalId = null;
+    let audioCtx = null;
+    const flashlightEl = document.getElementById("flashlight");
+    const timeEl = document.getElementById("time");
+    const hintEl = document.getElementById("hint");
+    const hoursInput = document.getElementById("hoursInput");
+    const minutesInput = document.getElementById("minutesInput");
+    const secondsInput = document.getElementById("secondsInput");
+    const ringtoneSelect = document.getElementById("ringtoneSelect");
+    const applyBtn = document.getElementById("applyBtn");
+    const themeBtn = document.getElementById("themeBtn");
+    const startBtn = document.getElementById("startBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const dingBtn = document.getElementById("dingBtn");
+
+    function toTotalSeconds(duration) {
+      return (duration.hours * 3600) + (duration.minutes * 60) + duration.seconds;
+    }
+
+    function formatTime(totalSeconds) {
+      const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+      const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+      const seconds = String(totalSeconds % 60).padStart(2, "0");
+      return `${hours}:${minutes}:${seconds}`;
+    }
+
+    function updateView() {
+      timeEl.textContent = formatTime(remaining);
+      document.title = `${formatTime(remaining)} | Pomodoro`;
+      hintEl.textContent = `Session length: ${selectedDuration.hours}h ${selectedDuration.minutes}m ${selectedDuration.seconds}s`;
+    }
+
+    function stopFlashlight() {
+      flashlightEl.classList.remove("active");
+      clearTimeout(flashTimeoutId);
+      flashTimeoutId = null;
+    }
+
+    function triggerFlashlight() {
+      stopFlashlight();
+      flashlightEl.classList.add("active");
+      flashTimeoutId = setTimeout(() => {
+        flashlightEl.classList.remove("active");
+      }, 2600);
+    }
+
+    function getAudioContext() {
+      if (audioCtx) {
+        return audioCtx;
+      }
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) {
+        return null;
+      }
+      audioCtx = new AudioCtx();
+      return audioCtx;
+    }
+
+    function unlockAudio() {
+      const ctx = getAudioContext();
+      if (!ctx || ctx.state !== "suspended") {
+        return;
+      }
+      ctx.resume();
+    }
+
+    function playRingtone() {
+      const ctx = getAudioContext();
+      if (!ctx) {
+        return;
+      }
+      const now = ctx.currentTime;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.connect(ctx.destination);
+
+      const selectedTone = ringtoneSelect.value;
+      const tones = {
+        radar: [740, 880, 740, 988],
+        seaside: [392, 440, 494, 523],
+        chime: [880, 1100]
+      };
+      const waveMap = {
+        radar: "triangle",
+        seaside: "sine",
+        chime: "sine"
+      };
+      const notes = tones[selectedTone] || tones.chime;
+      const waveType = waveMap[selectedTone] || "sine";
+
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const startAt = now + i * 0.14;
+        osc.type = waveType;
+        osc.frequency.setValueAtTime(freq, startAt);
+        osc.connect(gain);
+        osc.start(startAt);
+        osc.stop(startAt + 0.28);
+      });
+
+      gain.gain.exponentialRampToValueAtTime(0.17, now + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.95);
+    }
+
+    function stopTimer() {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+
+    function stopAlarmLoop() {
+      clearInterval(alarmIntervalId);
+      alarmIntervalId = null;
+      stopFlashlight();
+    }
+
+    function startAlarmLoop() {
+      stopAlarmLoop();
+      triggerFlashlight();
+      playRingtone();
+      alarmIntervalId = setInterval(() => {
+        triggerFlashlight();
+        playRingtone();
+      }, 1800);
+    }
+
+    function parseSafeInt(value, min, max, fallback) {
+      const parsed = Number.parseInt(value, 10);
+      if (!Number.isFinite(parsed)) {
+        return fallback;
+      }
+      return Math.min(max, Math.max(min, parsed));
+    }
+
+    function applyDuration() {
+      const hours = parseSafeInt(hoursInput.value, 0, 23, DEFAULT_DURATION.hours);
+      const minutes = parseSafeInt(minutesInput.value, 0, 59, DEFAULT_DURATION.minutes);
+      const seconds = parseSafeInt(secondsInput.value, 0, 59, DEFAULT_DURATION.seconds);
+      const nextDuration = { hours, minutes, seconds };
+      if (toTotalSeconds(nextDuration) === 0) {
+        nextDuration.minutes = 1;
+      }
+
+      selectedDuration = nextDuration;
+      hoursInput.value = String(selectedDuration.hours);
+      minutesInput.value = String(selectedDuration.minutes);
+      secondsInput.value = String(selectedDuration.seconds);
+      stopTimer();
+      stopAlarmLoop();
+      remaining = toTotalSeconds(selectedDuration);
+      updateView();
+    }
+
+    function onTick() {
+      remaining -= 1;
+      updateView();
+
+      if (remaining <= 0) {
+        stopTimer();
+        remaining = 0;
+        updateView();
+        startAlarmLoop();
+      }
+    }
+
+    resetBtn.addEventListener("click", () => {
+      stopTimer();
+      stopAlarmLoop();
+      remaining = toTotalSeconds(selectedDuration);
+      updateView();
+    });
+
+    applyBtn.addEventListener("click", applyDuration);
+
+    [hoursInput, minutesInput, secondsInput].forEach((input) => {
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          applyDuration();
+        }
+      });
+    });
+
+    themeBtn.addEventListener("click", () => {
+      isNight = !isNight;
+      document.body.classList.toggle("night", isNight);
+      themeBtn.textContent = isNight ? "Day Mode" : "Night Mode";
+    });
+
+    dingBtn.addEventListener("click", () => {
+      unlockAudio();
+      triggerFlashlight();
+      playRingtone();
+    });
+
+    startBtn.addEventListener("click", () => {
+      unlockAudio();
+      if (intervalId) {
+        return;
+      }
+      stopAlarmLoop();
+      if (remaining <= 0) {
+        remaining = toTotalSeconds(selectedDuration);
+      }
+      intervalId = setInterval(onTick, 1000);
+    });
+
+    pauseBtn.addEventListener("click", () => {
+      stopTimer();
+      stopAlarmLoop();
+    });
+
+    applyDuration();
+    ringtoneSelect.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        playRingtone();
+      }
+    });
+  </script>
+</body>
+</html>
