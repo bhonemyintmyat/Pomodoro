@@ -127,6 +127,79 @@
       color: rgba(255, 255, 255, 0.7);
     }
 
+    .soundbar {
+      margin: 0.9rem 0 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .soundbar label {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .soundbar input[type="range"] {
+      width: 8.5rem;
+      accent-color: #ffffff;
+      cursor: pointer;
+    }
+
+    .modes {
+      display: flex;
+      justify-content: center;
+      gap: 0.55rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.9rem;
+    }
+
+    .mode-btn.active {
+      background: rgba(255, 255, 255, 0.45);
+      color: #1d2440;
+    }
+
+    body.night .mode-btn.active {
+      color: #f4f7ff;
+      background: rgba(143, 170, 236, 0.45);
+    }
+
+    .intervals {
+      margin: 0.25rem 0 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+
+    .intervals label {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .intervals input {
+      width: 3.6rem;
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      border-radius: 999px;
+      padding: 0.45rem 0.65rem;
+      color: #fff;
+      background: var(--input-bg);
+      outline: none;
+      text-align: center;
+    }
+
+    .bg-audio-frame {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+      border: 0;
+      z-index: -1;
+    }
+
     .flashlight {
       position: fixed;
       inset: 0;
@@ -183,6 +256,22 @@
   <div class="flashlight" id="flashlight" aria-hidden="true"></div>
   <main class="card">
     <h1>Pomodoro Timer</h1>
+    <div class="modes">
+      <button id="focusModeBtn" class="mode-btn active">Focus</button>
+      <button id="shortModeBtn" class="mode-btn">Short Break</button>
+      <button id="longModeBtn" class="mode-btn">Long Break</button>
+    </div>
+    <div class="intervals">
+      <label for="focusMinutesInput">Focus</label>
+      <input id="focusMinutesInput" type="number" min="1" max="180" value="25" />
+      <label for="shortMinutesInput">Short</label>
+      <input id="shortMinutesInput" type="number" min="1" max="60" value="5" />
+      <label for="longMinutesInput">Long</label>
+      <input id="longMinutesInput" type="number" min="1" max="120" value="15" />
+      <label for="alarmDurationInput">Alarm s</label>
+      <input id="alarmDurationInput" type="number" min="5" max="600" value="30" />
+      <button id="saveIntervalsBtn">Save</button>
+    </div>
     <div class="setup">
       <label for="hoursInput">H</label>
       <input id="hoursInput" type="number" min="0" max="23" value="0" />
@@ -198,6 +287,15 @@
       <button id="applyBtn">Apply</button>
       <button id="themeBtn">Night Mode</button>
     </div>
+    <div class="soundbar">
+      <label for="bgSoundSelect">Background</label>
+      <select id="bgSoundSelect" aria-label="Background sound">
+        <option value="lofi">Lofi Beats</option>
+        <option value="rain">Ambient Rain</option>
+      </select>
+      <label for="volumeSlider">Volume</label>
+      <input id="volumeSlider" type="range" min="0" max="100" value="35" />
+    </div>
     <p class="time" id="time" aria-live="polite">00:25:00</p>
     <div class="controls">
       <button id="startBtn">Start</button>
@@ -207,6 +305,13 @@
     </div>
     <p class="hint" id="hint">Session length: 0h 25m 0s</p>
   </main>
+  <iframe
+    id="bgAudioFrame"
+    class="bg-audio-frame"
+    title="Background audio player"
+    allow="autoplay"
+    referrerpolicy="strict-origin-when-cross-origin"
+  ></iframe>
 
   <script>
     const DEFAULT_DURATION = { hours: 0, minutes: 25, seconds: 0 };
@@ -216,20 +321,84 @@
     let intervalId = null;
     let flashTimeoutId = null;
     let alarmIntervalId = null;
+    let alarmStopTimeoutId = null;
     let audioCtx = null;
+    const DEFAULT_INTERVALS = { focus: 25, short: 5, long: 15 };
+    let intervalMinutes = { ...DEFAULT_INTERVALS };
+    let currentMode = "focus";
+    let alarmDurationSeconds = 30;
     const flashlightEl = document.getElementById("flashlight");
     const timeEl = document.getElementById("time");
     const hintEl = document.getElementById("hint");
+    const focusModeBtn = document.getElementById("focusModeBtn");
+    const shortModeBtn = document.getElementById("shortModeBtn");
+    const longModeBtn = document.getElementById("longModeBtn");
+    const focusMinutesInput = document.getElementById("focusMinutesInput");
+    const shortMinutesInput = document.getElementById("shortMinutesInput");
+    const longMinutesInput = document.getElementById("longMinutesInput");
+    const alarmDurationInput = document.getElementById("alarmDurationInput");
+    const saveIntervalsBtn = document.getElementById("saveIntervalsBtn");
     const hoursInput = document.getElementById("hoursInput");
     const minutesInput = document.getElementById("minutesInput");
     const secondsInput = document.getElementById("secondsInput");
     const ringtoneSelect = document.getElementById("ringtoneSelect");
+    const bgSoundSelect = document.getElementById("bgSoundSelect");
+    const volumeSlider = document.getElementById("volumeSlider");
     const applyBtn = document.getElementById("applyBtn");
     const themeBtn = document.getElementById("themeBtn");
     const startBtn = document.getElementById("startBtn");
     const pauseBtn = document.getElementById("pauseBtn");
     const resetBtn = document.getElementById("resetBtn");
     const dingBtn = document.getElementById("dingBtn");
+    const bgAudioFrame = document.getElementById("bgAudioFrame");
+    const YT_ORIGIN = window.location.origin;
+    const BG_TRACKS = {
+      lofi: "jfKfPfyJRdk",
+      rain: "mPZkdNFkNps"
+    };
+
+    function buildEmbedUrl(trackId) {
+      const params = new URLSearchParams({
+        autoplay: "0",
+        controls: "0",
+        loop: "1",
+        playlist: trackId,
+        enablejsapi: "1",
+        origin: YT_ORIGIN
+      });
+      return `https://www.youtube.com/embed/${trackId}?${params.toString()}`;
+    }
+
+    function sendPlayerCommand(command, args = []) {
+      if (!bgAudioFrame.contentWindow) {
+        return;
+      }
+      bgAudioFrame.contentWindow.postMessage(JSON.stringify({
+        event: "command",
+        func: command,
+        args
+      }), "*");
+    }
+
+    function loadBackgroundTrack() {
+      const key = bgSoundSelect.value;
+      const trackId = BG_TRACKS[key] || BG_TRACKS.lofi;
+      bgAudioFrame.src = buildEmbedUrl(trackId);
+    }
+
+    function setBackgroundVolume() {
+      sendPlayerCommand("setVolume", [Number.parseInt(volumeSlider.value, 10) || 0]);
+    }
+
+    function startBackgroundAudio() {
+      sendPlayerCommand("playVideo");
+      setBackgroundVolume();
+      sendPlayerCommand("unMute");
+    }
+
+    function stopBackgroundAudio() {
+      sendPlayerCommand("pauseVideo");
+    }
 
     function toTotalSeconds(duration) {
       return (duration.hours * 3600) + (duration.minutes * 60) + duration.seconds;
@@ -245,7 +414,40 @@
     function updateView() {
       timeEl.textContent = formatTime(remaining);
       document.title = `${formatTime(remaining)} | Pomodoro`;
-      hintEl.textContent = `Session length: ${selectedDuration.hours}h ${selectedDuration.minutes}m ${selectedDuration.seconds}s`;
+      const modeLabelMap = {
+        focus: "Focus",
+        short: "Short Break",
+        long: "Long Break"
+      };
+      hintEl.textContent = `${modeLabelMap[currentMode]}: ${selectedDuration.hours}h ${selectedDuration.minutes}m ${selectedDuration.seconds}s | Alarm: ${alarmDurationSeconds}s`;
+    }
+
+    function updateModeButtons() {
+      focusModeBtn.classList.toggle("active", currentMode === "focus");
+      shortModeBtn.classList.toggle("active", currentMode === "short");
+      longModeBtn.classList.toggle("active", currentMode === "long");
+    }
+
+    function minutesToDuration(totalMinutes) {
+      const safeMins = Math.max(1, totalMinutes);
+      return {
+        hours: Math.floor(safeMins / 60),
+        minutes: safeMins % 60,
+        seconds: 0
+      };
+    }
+
+    function applyModeDuration(mode) {
+      currentMode = mode;
+      selectedDuration = minutesToDuration(intervalMinutes[mode]);
+      hoursInput.value = String(selectedDuration.hours);
+      minutesInput.value = String(selectedDuration.minutes);
+      secondsInput.value = String(selectedDuration.seconds);
+      stopTimer();
+      stopAlarmLoop();
+      remaining = toTotalSeconds(selectedDuration);
+      updateModeButtons();
+      updateView();
     }
 
     function stopFlashlight() {
@@ -327,18 +529,28 @@
 
     function stopAlarmLoop() {
       clearInterval(alarmIntervalId);
+      clearTimeout(alarmStopTimeoutId);
       alarmIntervalId = null;
+      alarmStopTimeoutId = null;
       stopFlashlight();
+      stopBackgroundAudio();
     }
 
     function startAlarmLoop() {
       stopAlarmLoop();
+      loadBackgroundTrack();
       triggerFlashlight();
       playRingtone();
+      setTimeout(() => {
+        startBackgroundAudio();
+      }, 700);
       alarmIntervalId = setInterval(() => {
         triggerFlashlight();
         playRingtone();
       }, 1800);
+      alarmStopTimeoutId = setTimeout(() => {
+        stopAlarmLoop();
+      }, Math.max(5, alarmDurationSeconds) * 1000);
     }
 
     function parseSafeInt(value, min, max, fallback) {
@@ -364,8 +576,23 @@
       secondsInput.value = String(selectedDuration.seconds);
       stopTimer();
       stopAlarmLoop();
+      stopBackgroundAudio();
       remaining = toTotalSeconds(selectedDuration);
       updateView();
+    }
+
+    function saveIntervals() {
+      intervalMinutes.focus = parseSafeInt(focusMinutesInput.value, 1, 180, DEFAULT_INTERVALS.focus);
+      intervalMinutes.short = parseSafeInt(shortMinutesInput.value, 1, 60, DEFAULT_INTERVALS.short);
+      intervalMinutes.long = parseSafeInt(longMinutesInput.value, 1, 120, DEFAULT_INTERVALS.long);
+      alarmDurationSeconds = parseSafeInt(alarmDurationInput.value, 5, 600, 30);
+
+      focusMinutesInput.value = String(intervalMinutes.focus);
+      shortMinutesInput.value = String(intervalMinutes.short);
+      longMinutesInput.value = String(intervalMinutes.long);
+      alarmDurationInput.value = String(alarmDurationSeconds);
+
+      applyModeDuration(currentMode);
     }
 
     function onTick() {
@@ -383,6 +610,7 @@
     resetBtn.addEventListener("click", () => {
       stopTimer();
       stopAlarmLoop();
+      stopBackgroundAudio();
       remaining = toTotalSeconds(selectedDuration);
       updateView();
     });
@@ -403,10 +631,31 @@
       themeBtn.textContent = isNight ? "Day Mode" : "Night Mode";
     });
 
+    bgSoundSelect.addEventListener("change", () => {
+      loadBackgroundTrack();
+      if (alarmIntervalId) {
+        setTimeout(() => {
+          startBackgroundAudio();
+        }, 700);
+      }
+    });
+
+    volumeSlider.addEventListener("input", () => {
+      setBackgroundVolume();
+    });
+
+    focusModeBtn.addEventListener("click", () => applyModeDuration("focus"));
+    shortModeBtn.addEventListener("click", () => applyModeDuration("short"));
+    longModeBtn.addEventListener("click", () => applyModeDuration("long"));
+    saveIntervalsBtn.addEventListener("click", saveIntervals);
+
     dingBtn.addEventListener("click", () => {
       unlockAudio();
-      triggerFlashlight();
-      playRingtone();
+      if (alarmIntervalId) {
+        stopAlarmLoop();
+        return;
+      }
+      startAlarmLoop();
     });
 
     startBtn.addEventListener("click", () => {
@@ -424,9 +673,11 @@
     pauseBtn.addEventListener("click", () => {
       stopTimer();
       stopAlarmLoop();
+      stopBackgroundAudio();
     });
 
-    applyDuration();
+    saveIntervals();
+    loadBackgroundTrack();
     ringtoneSelect.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         playRingtone();
