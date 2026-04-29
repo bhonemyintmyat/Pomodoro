@@ -6,12 +6,14 @@
   <title>Pomodoro Timer</title>
   <style>
     :root {
-      --text: #f7f6fb;
+      --text: #111827;
       --glass-bg: rgba(255, 255, 255, 0.14);
       --glass-border: rgba(255, 255, 255, 0.28);
       --btn-bg: rgba(255, 255, 255, 0.2);
       --btn-bg-hover: rgba(255, 255, 255, 0.3);
       --input-bg: rgba(255, 255, 255, 0.22);
+      --control-text: #111827;
+      --control-border: rgba(17, 24, 39, 0.2);
       --gradient: linear-gradient(130deg, #d6c8ff, #b8e5ff, #ffd6e7, #d2f5dc);
     }
 
@@ -24,7 +26,7 @@
       min-height: 100vh;
       display: grid;
       place-items: center;
-      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       color: var(--text);
       background: var(--gradient);
       background-size: 250% 250%;
@@ -40,6 +42,8 @@
       --btn-bg: rgba(143, 170, 236, 0.2);
       --btn-bg-hover: rgba(143, 170, 236, 0.35);
       --input-bg: rgba(120, 145, 210, 0.22);
+      --control-text: #ffffff;
+      --control-border: rgba(255, 255, 255, 0.35);
       --gradient: linear-gradient(130deg, #1c2344, #263560, #162947, #3d2d5b);
     }
 
@@ -56,7 +60,7 @@
     }
 
     .card {
-      width: min(90vw, 420px);
+      width: min(94vw, 560px);
       border-radius: 24px;
       padding: 2rem;
       backdrop-filter: blur(14px);
@@ -107,10 +111,10 @@
     .setup input,
     .setup select {
       width: 4.2rem;
-      border: 1px solid rgba(255, 255, 255, 0.38);
+      border: 1px solid var(--control-border);
       border-radius: 999px;
       padding: 0.5rem 0.8rem;
-      color: #fff;
+      color: var(--control-text);
       background: var(--input-bg);
       outline: none;
       text-align: center;
@@ -124,7 +128,7 @@
 
     .setup input::placeholder,
     .setup select::placeholder {
-      color: rgba(255, 255, 255, 0.7);
+      color: color-mix(in srgb, var(--control-text) 60%, transparent);
     }
 
     .soundbar {
@@ -147,47 +151,35 @@
       cursor: pointer;
     }
 
-    .modes {
-      display: flex;
-      justify-content: center;
-      gap: 0.55rem;
-      flex-wrap: wrap;
-      margin-bottom: 0.9rem;
-    }
-
-    .mode-btn.active {
-      background: rgba(255, 255, 255, 0.45);
-      color: #1d2440;
-    }
-
-    body.night .mode-btn.active {
-      color: #f4f7ff;
-      background: rgba(143, 170, 236, 0.45);
-    }
-
-    .intervals {
-      margin: 0.25rem 0 0.9rem;
+    .clock-alarm {
+      margin: 0 0 1.1rem;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 0.45rem;
+      gap: 0.5rem;
     }
 
-    .intervals label {
-      font-size: 0.85rem;
-      font-weight: 600;
+    .clock-alarm label {
+      font-size: 0.9rem;
+      font-weight: 700;
     }
 
-    .intervals input {
-      width: 3.6rem;
-      border: 1px solid rgba(255, 255, 255, 0.38);
+    .clock-alarm input,
+    .clock-alarm select {
+      width: 4.2rem;
+      border: 1px solid var(--control-border);
       border-radius: 999px;
-      padding: 0.45rem 0.65rem;
-      color: #fff;
+      padding: 0.5rem 0.75rem;
+      color: var(--control-text);
       background: var(--input-bg);
       outline: none;
       text-align: center;
+    }
+
+    .clock-alarm select {
+      width: 4.8rem;
+      cursor: pointer;
     }
 
     .bg-audio-frame {
@@ -227,14 +219,43 @@
     }
 
     button {
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      border: 1px solid var(--control-border);
       border-radius: 999px;
       padding: 0.7rem 1.1rem;
-      color: #fff;
+      color: var(--control-text);
       background: var(--btn-bg);
       font-weight: 600;
       cursor: pointer;
       transition: background 150ms ease, transform 120ms ease;
+    }
+
+    .btn-primary {
+      background: rgba(77, 184, 128, 0.72);
+      border-color: rgba(255, 255, 255, 0.56);
+      color: var(--control-text);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.24);
+    }
+
+    .btn-danger {
+      background: rgba(255, 104, 104, 0.68);
+      border-color: rgba(255, 255, 255, 0.56);
+      color: var(--control-text);
+    }
+
+    .btn-alert {
+      background: rgba(255, 193, 92, 0.78);
+      color: var(--control-text);
+      border-color: rgba(255, 255, 255, 0.6);
+    }
+
+    .btn-primary:hover,
+    .btn-secondary:hover,
+    .btn-danger:hover,
+    .btn-alert:hover {
+      filter: brightness(1.08);
     }
 
     button:hover {
@@ -245,65 +266,234 @@
       transform: translateY(1px);
     }
 
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 5;
+      width: 4.4rem;
+      height: 2.35rem;
+      padding: 0.18rem;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.35);
+      border: 1px solid var(--control-border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(20, 20, 40, 0.16);
+    }
+
+    .theme-toggle .toggle-thumb {
+      width: 1.95rem;
+      height: 1.95rem;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #111827;
+      background: rgba(255, 255, 255, 0.88);
+      transition: transform 200ms ease, background 200ms ease;
+    }
+
+    body.night .theme-toggle {
+      justify-content: flex-start;
+      background: rgba(20, 28, 54, 0.45);
+    }
+
+    body.night .theme-toggle .toggle-thumb {
+      transform: translateX(2rem);
+      color: #f7f8ff;
+      background: rgba(40, 53, 99, 0.94);
+    }
+
     .hint {
       margin-top: 1.2rem;
       opacity: 0.88;
       font-size: 0.9rem;
     }
+
+    .tool-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 0.55rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .tool-tab.active {
+      background: rgba(255, 255, 255, 0.45);
+      color: #1d2440;
+    }
+
+    body.night .tool-tab.active {
+      color: #f4f7ff;
+      background: rgba(143, 170, 236, 0.45);
+    }
+
+    .tool-section {
+      display: none;
+    }
+
+    .tool-section.active {
+      display: block;
+    }
+
+    .section-title {
+      margin: 0.25rem 0 0.85rem;
+      font-size: 1rem;
+      opacity: 0.92;
+    }
+
+    .alarm-list {
+      display: grid;
+      gap: 0.55rem;
+      margin-top: 0.75rem;
+    }
+
+    .timer-list {
+      display: grid;
+      gap: 0.55rem;
+      margin: 0.8rem 0 1rem;
+    }
+
+    .alarm-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .alarm-item span {
+      font-weight: 700;
+    }
+
+    .timer-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .timer-item.active {
+      border-color: rgba(255, 255, 255, 0.58);
+      background: rgba(255, 255, 255, 0.23);
+    }
+
+    .timer-item span {
+      font-weight: 700;
+    }
+
+    .icon-btn {
+      width: 2.4rem;
+      height: 2.4rem;
+      padding: 0;
+      display: inline-grid;
+      place-items: center;
+      font-size: 1.1rem;
+    }
+
+    .stopwatch-time {
+      margin: 0.6rem 0 1.1rem;
+      font-size: clamp(2.2rem, 8vw, 3.4rem);
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    }
   </style>
 </head>
-<body>
+<body class="night">
   <div class="flashlight" id="flashlight" aria-hidden="true"></div>
+  <button id="themeBtn" class="theme-toggle" type="button" aria-label="Switch to day mode" aria-pressed="true">
+    <span class="toggle-thumb" id="themeIcon">☾</span>
+  </button>
   <main class="card">
-    <h1>Pomodoro Timer</h1>
-    <div class="modes">
-      <button id="focusModeBtn" class="mode-btn active">Focus</button>
-      <button id="shortModeBtn" class="mode-btn">Short Break</button>
-      <button id="longModeBtn" class="mode-btn">Long Break</button>
+    <h1>Pomodoro Tools</h1>
+    <div class="tool-tabs">
+      <button id="alarmTabBtn" class="tool-tab active">Alarm</button>
+      <button id="stopwatchTabBtn" class="tool-tab">Stopwatch</button>
+      <button id="timerTabBtn" class="tool-tab">Timer</button>
     </div>
-    <div class="intervals">
-      <label for="focusMinutesInput">Focus</label>
-      <input id="focusMinutesInput" type="number" min="1" max="180" value="25" />
-      <label for="shortMinutesInput">Short</label>
-      <input id="shortMinutesInput" type="number" min="1" max="60" value="5" />
-      <label for="longMinutesInput">Long</label>
-      <input id="longMinutesInput" type="number" min="1" max="120" value="15" />
-      <label for="alarmDurationInput">Alarm s</label>
-      <input id="alarmDurationInput" type="number" min="5" max="600" value="30" />
-      <button id="saveIntervalsBtn">Save</button>
-    </div>
-    <div class="setup">
-      <label for="hoursInput">H</label>
-      <input id="hoursInput" type="number" min="0" max="23" value="0" />
-      <label for="minutesInput">M</label>
-      <input id="minutesInput" type="number" min="0" max="59" value="25" />
-      <label for="secondsInput">S</label>
-      <input id="secondsInput" type="number" min="0" max="59" value="0" />
-      <select id="ringtoneSelect" aria-label="Alarm ringtone">
-        <option value="radar">Radar</option>
-        <option value="seaside">By the Seaside</option>
-        <option value="chime">Classic Chime</option>
-      </select>
-      <button id="applyBtn">Apply</button>
-      <button id="themeBtn">Night Mode</button>
-    </div>
-    <div class="soundbar">
-      <label for="bgSoundSelect">Background</label>
-      <select id="bgSoundSelect" aria-label="Background sound">
-        <option value="lofi">Lofi Beats</option>
-        <option value="rain">Ambient Rain</option>
-      </select>
-      <label for="volumeSlider">Volume</label>
-      <input id="volumeSlider" type="range" min="0" max="100" value="35" />
-    </div>
-    <p class="time" id="time" aria-live="polite">00:25:00</p>
-    <div class="controls">
-      <button id="startBtn">Start</button>
-      <button id="pauseBtn">Pause</button>
-      <button id="resetBtn">Reset</button>
-      <button id="dingBtn">Test Alarm</button>
-    </div>
-    <p class="hint" id="hint">Session length: 0h 25m 0s</p>
+
+    <section id="alarmSection" class="tool-section active">
+      <h2 class="section-title">Alarm</h2>
+      <div class="setup">
+        <select id="ringtoneSelect" aria-label="Alarm ringtone">
+          <option value="radar">Radar</option>
+          <option value="seaside">By the Seaside</option>
+          <option value="chime">Classic Chime</option>
+        </select>
+        <label for="alarmDurationInput">Alarm s</label>
+        <input id="alarmDurationInput" type="number" min="5" max="600" value="30" />
+      </div>
+      <div class="soundbar">
+        <label for="bgSoundSelect">Background</label>
+        <select id="bgSoundSelect" aria-label="Background sound">
+          <option value="lofi">Lofi Beats</option>
+          <option value="rain">Ambient Rain</option>
+        </select>
+        <label for="volumeSlider">Volume</label>
+        <input id="volumeSlider" type="range" min="0" max="100" value="35" />
+      </div>
+      <div class="clock-alarm">
+        <label for="clockHourInput">Alarm At</label>
+        <input id="clockHourInput" type="number" min="1" max="12" value="5" aria-label="Alarm hour" />
+        <span>:</span>
+        <input id="clockMinuteInput" type="number" min="0" max="59" value="00" aria-label="Alarm minute" />
+        <select id="clockPeriodSelect" aria-label="AM or PM">
+          <option value="AM">AM</option>
+          <option value="PM">PM</option>
+        </select>
+        <button id="addClockAlarmBtn" class="btn-alert icon-btn" title="Add alarm">+</button>
+        <button id="setClockAlarmBtn" class="btn-alert">Save Alarm</button>
+        <button id="clearClockAlarmBtn" class="btn-secondary">Clear All</button>
+      </div>
+      <div id="alarmList" class="alarm-list" aria-live="polite"></div>
+      <div class="controls">
+        <button id="dingBtn" class="btn-danger">Test Alarm</button>
+      </div>
+      <p class="hint" id="alarmHint">No alarms set</p>
+    </section>
+
+    <section id="stopwatchSection" class="tool-section">
+      <h2 class="section-title">Stopwatch</h2>
+      <p class="stopwatch-time" id="stopwatchTime" aria-live="polite">00:00:00.0</p>
+      <div class="controls">
+        <button id="startStopwatchBtn" class="btn-primary">Start Stopwatch</button>
+        <button id="pauseStopwatchBtn" class="btn-secondary">Pause Stopwatch</button>
+        <button id="resetStopwatchBtn" class="btn-secondary">Reset Stopwatch</button>
+      </div>
+    </section>
+
+    <section id="timerSection" class="tool-section">
+      <h2 class="section-title">Timer</h2>
+      <div class="setup">
+        <label for="hoursInput">H</label>
+        <input id="hoursInput" type="number" min="0" max="23" value="0" />
+        <label for="minutesInput">M</label>
+        <input id="minutesInput" type="number" min="0" max="59" value="25" />
+        <label for="secondsInput">S</label>
+        <input id="secondsInput" type="number" min="0" max="59" value="0" />
+        <button id="addTimerBtn" class="btn-alert icon-btn" title="Add timer">+</button>
+        <button id="applyBtn">Save Timer</button>
+      </div>
+      <div id="timerList" class="timer-list" aria-live="polite"></div>
+      <p class="time" id="time" aria-live="polite">00:25:00</p>
+      <div class="controls">
+        <button id="startBtn" class="btn-primary">Start Timer</button>
+        <button id="pauseBtn" class="btn-secondary">Pause Timer</button>
+        <button id="resetBtn" class="btn-secondary">Reset Timer</button>
+      </div>
+      <p class="hint" id="hint">Session length: 0h 25m 0s</p>
+    </section>
   </main>
   <iframe
     id="bgAudioFrame"
@@ -317,35 +507,56 @@
     const DEFAULT_DURATION = { hours: 0, minutes: 25, seconds: 0 };
     let selectedDuration = { ...DEFAULT_DURATION };
     let remaining = toTotalSeconds(selectedDuration);
-    let isNight = false;
+    let isNight = true;
     let intervalId = null;
     let flashTimeoutId = null;
     let alarmIntervalId = null;
     let alarmStopTimeoutId = null;
+    let clockCheckIntervalId = null;
+    let clockAlarms = [];
+    let editingAlarmId = null;
+    let lastClockAlarmKey = "";
+    let stopwatchIntervalId = null;
+    let stopwatchStartedAt = 0;
+    let stopwatchElapsed = 0;
     let audioCtx = null;
-    const DEFAULT_INTERVALS = { focus: 25, short: 5, long: 15 };
-    let intervalMinutes = { ...DEFAULT_INTERVALS };
-    let currentMode = "focus";
+    let timers = [];
+    let selectedTimerId = null;
+    let editingTimerId = null;
     let alarmDurationSeconds = 30;
+    const alarmTabBtn = document.getElementById("alarmTabBtn");
+    const stopwatchTabBtn = document.getElementById("stopwatchTabBtn");
+    const timerTabBtn = document.getElementById("timerTabBtn");
+    const alarmSection = document.getElementById("alarmSection");
+    const stopwatchSection = document.getElementById("stopwatchSection");
+    const timerSection = document.getElementById("timerSection");
     const flashlightEl = document.getElementById("flashlight");
     const timeEl = document.getElementById("time");
     const hintEl = document.getElementById("hint");
-    const focusModeBtn = document.getElementById("focusModeBtn");
-    const shortModeBtn = document.getElementById("shortModeBtn");
-    const longModeBtn = document.getElementById("longModeBtn");
-    const focusMinutesInput = document.getElementById("focusMinutesInput");
-    const shortMinutesInput = document.getElementById("shortMinutesInput");
-    const longMinutesInput = document.getElementById("longMinutesInput");
+    const alarmHint = document.getElementById("alarmHint");
     const alarmDurationInput = document.getElementById("alarmDurationInput");
-    const saveIntervalsBtn = document.getElementById("saveIntervalsBtn");
     const hoursInput = document.getElementById("hoursInput");
     const minutesInput = document.getElementById("minutesInput");
     const secondsInput = document.getElementById("secondsInput");
+    const addTimerBtn = document.getElementById("addTimerBtn");
+    const timerList = document.getElementById("timerList");
     const ringtoneSelect = document.getElementById("ringtoneSelect");
     const bgSoundSelect = document.getElementById("bgSoundSelect");
     const volumeSlider = document.getElementById("volumeSlider");
+    const clockHourInput = document.getElementById("clockHourInput");
+    const clockMinuteInput = document.getElementById("clockMinuteInput");
+    const clockPeriodSelect = document.getElementById("clockPeriodSelect");
+    const addClockAlarmBtn = document.getElementById("addClockAlarmBtn");
+    const setClockAlarmBtn = document.getElementById("setClockAlarmBtn");
+    const clearClockAlarmBtn = document.getElementById("clearClockAlarmBtn");
+    const alarmList = document.getElementById("alarmList");
+    const stopwatchTime = document.getElementById("stopwatchTime");
+    const startStopwatchBtn = document.getElementById("startStopwatchBtn");
+    const pauseStopwatchBtn = document.getElementById("pauseStopwatchBtn");
+    const resetStopwatchBtn = document.getElementById("resetStopwatchBtn");
     const applyBtn = document.getElementById("applyBtn");
     const themeBtn = document.getElementById("themeBtn");
+    const themeIcon = document.getElementById("themeIcon");
     const startBtn = document.getElementById("startBtn");
     const pauseBtn = document.getElementById("pauseBtn");
     const resetBtn = document.getElementById("resetBtn");
@@ -414,40 +625,30 @@
     function updateView() {
       timeEl.textContent = formatTime(remaining);
       document.title = `${formatTime(remaining)} | Pomodoro`;
-      const modeLabelMap = {
-        focus: "Focus",
-        short: "Short Break",
-        long: "Long Break"
+      hintEl.textContent = selectedTimerId
+        ? `Selected timer: ${formatTime(toTotalSeconds(selectedDuration))}`
+        : "Add or select a timer to begin.";
+      alarmHint.textContent = clockAlarms.length
+        ? `${clockAlarms.length} alarm${clockAlarms.length === 1 ? "" : "s"} set | Alarm duration: ${alarmDurationSeconds}s`
+        : `No alarms set | Alarm duration: ${alarmDurationSeconds}s`;
+    }
+
+    function showTool(tool) {
+      const sections = {
+        alarm: alarmSection,
+        stopwatch: stopwatchSection,
+        timer: timerSection
       };
-      hintEl.textContent = `${modeLabelMap[currentMode]}: ${selectedDuration.hours}h ${selectedDuration.minutes}m ${selectedDuration.seconds}s | Alarm: ${alarmDurationSeconds}s`;
-    }
-
-    function updateModeButtons() {
-      focusModeBtn.classList.toggle("active", currentMode === "focus");
-      shortModeBtn.classList.toggle("active", currentMode === "short");
-      longModeBtn.classList.toggle("active", currentMode === "long");
-    }
-
-    function minutesToDuration(totalMinutes) {
-      const safeMins = Math.max(1, totalMinutes);
-      return {
-        hours: Math.floor(safeMins / 60),
-        minutes: safeMins % 60,
-        seconds: 0
+      const tabs = {
+        alarm: alarmTabBtn,
+        stopwatch: stopwatchTabBtn,
+        timer: timerTabBtn
       };
-    }
 
-    function applyModeDuration(mode) {
-      currentMode = mode;
-      selectedDuration = minutesToDuration(intervalMinutes[mode]);
-      hoursInput.value = String(selectedDuration.hours);
-      minutesInput.value = String(selectedDuration.minutes);
-      secondsInput.value = String(selectedDuration.seconds);
-      stopTimer();
-      stopAlarmLoop();
-      remaining = toTotalSeconds(selectedDuration);
-      updateModeButtons();
-      updateView();
+      Object.keys(sections).forEach((key) => {
+        sections[key].classList.toggle("active", key === tool);
+        tabs[key].classList.toggle("active", key === tool);
+      });
     }
 
     function stopFlashlight() {
@@ -534,10 +735,13 @@
       alarmStopTimeoutId = null;
       stopFlashlight();
       stopBackgroundAudio();
+      dingBtn.textContent = "Test Alarm";
     }
 
     function startAlarmLoop() {
       stopAlarmLoop();
+      syncAlarmDuration();
+      dingBtn.textContent = "Stop Alarm";
       loadBackgroundTrack();
       triggerFlashlight();
       playRingtone();
@@ -551,6 +755,166 @@
       alarmStopTimeoutId = setTimeout(() => {
         stopAlarmLoop();
       }, Math.max(5, alarmDurationSeconds) * 1000);
+    }
+
+    function formatClockAlarm(alarm) {
+      return `${alarm.hour12}:${String(alarm.minute).padStart(2, "0")} ${alarm.period}`;
+    }
+
+    function to24Hour(hour12, period) {
+      if (period === "AM") {
+        return hour12 === 12 ? 0 : hour12;
+      }
+      return hour12 === 12 ? 12 : hour12 + 12;
+    }
+
+    function syncAlarmDuration() {
+      alarmDurationSeconds = parseSafeInt(alarmDurationInput.value, 5, 600, 30);
+      alarmDurationInput.value = String(alarmDurationSeconds);
+      updateView();
+    }
+
+    function getAlarmFromInputs() {
+      unlockAudio();
+      syncAlarmDuration();
+      const hour12 = parseSafeInt(clockHourInput.value, 1, 12, 5);
+      const minute = parseSafeInt(clockMinuteInput.value, 0, 59, 0);
+      const period = clockPeriodSelect.value === "PM" ? "PM" : "AM";
+
+      clockHourInput.value = String(hour12);
+      clockMinuteInput.value = String(minute).padStart(2, "0");
+      clockPeriodSelect.value = period;
+
+      return {
+        id: editingAlarmId || Date.now(),
+        hour12,
+        hour24: to24Hour(hour12, period),
+        minute,
+        period
+      };
+    }
+
+    function renderAlarms() {
+      alarmList.innerHTML = "";
+
+      clockAlarms.forEach((alarm) => {
+        const item = document.createElement("div");
+        item.className = "alarm-item";
+
+        const time = document.createElement("span");
+        time.textContent = formatClockAlarm(alarm);
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "btn-secondary icon-btn";
+        editBtn.type = "button";
+        editBtn.textContent = "✎";
+        editBtn.setAttribute("aria-label", `Edit ${formatClockAlarm(alarm)}`);
+        editBtn.title = `Edit ${formatClockAlarm(alarm)}`;
+        editBtn.addEventListener("click", () => {
+          editingAlarmId = alarm.id;
+          clockHourInput.value = String(alarm.hour12);
+          clockMinuteInput.value = String(alarm.minute).padStart(2, "0");
+          clockPeriodSelect.value = alarm.period;
+          setClockAlarmBtn.textContent = "Save Edit";
+        });
+
+        item.append(time, editBtn);
+        alarmList.appendChild(item);
+      });
+
+      updateView();
+    }
+
+    function addClockAlarm() {
+      editingAlarmId = null;
+      clockAlarms.push(getAlarmFromInputs());
+      lastClockAlarmKey = "";
+      setClockAlarmBtn.textContent = "Save Alarm";
+      renderAlarms();
+    }
+
+    function setClockAlarm() {
+      const alarm = getAlarmFromInputs();
+
+      if (editingAlarmId) {
+        clockAlarms = clockAlarms.map((item) => item.id === editingAlarmId ? alarm : item);
+      } else {
+        clockAlarms.push(alarm);
+      }
+
+      editingAlarmId = null;
+      lastClockAlarmKey = "";
+      setClockAlarmBtn.textContent = "Save Alarm";
+      renderAlarms();
+    }
+
+    function clearClockAlarm() {
+      clockAlarms = [];
+      editingAlarmId = null;
+      lastClockAlarmKey = "";
+      setClockAlarmBtn.textContent = "Save Alarm";
+      renderAlarms();
+    }
+
+    function checkClockAlarm() {
+      if (!clockAlarms.length || alarmIntervalId) {
+        return;
+      }
+
+      const now = new Date();
+      const currentKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}-${now.getMinutes()}`;
+      const dueAlarm = clockAlarms.find((alarm) => (
+        now.getHours() === alarm.hour24 &&
+        now.getMinutes() === alarm.minute
+      ));
+
+      if (dueAlarm && currentKey !== lastClockAlarmKey) {
+        lastClockAlarmKey = currentKey;
+        unlockAudio();
+        startAlarmLoop();
+      }
+    }
+
+    function formatStopwatch(ms) {
+      const totalTenths = Math.floor(ms / 100);
+      const tenths = totalTenths % 10;
+      const totalSeconds = Math.floor(totalTenths / 10);
+      const seconds = String(totalSeconds % 60).padStart(2, "0");
+      const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+      const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+      return `${hours}:${minutes}:${seconds}.${tenths}`;
+    }
+
+    function updateStopwatch() {
+      const runningElapsed = stopwatchIntervalId ? Date.now() - stopwatchStartedAt : 0;
+      stopwatchTime.textContent = formatStopwatch(stopwatchElapsed + runningElapsed);
+    }
+
+    function startStopwatch() {
+      if (stopwatchIntervalId) {
+        return;
+      }
+      stopwatchStartedAt = Date.now();
+      stopwatchIntervalId = setInterval(updateStopwatch, 100);
+      updateStopwatch();
+    }
+
+    function pauseStopwatch() {
+      if (!stopwatchIntervalId) {
+        return;
+      }
+      stopwatchElapsed += Date.now() - stopwatchStartedAt;
+      clearInterval(stopwatchIntervalId);
+      stopwatchIntervalId = null;
+      updateStopwatch();
+    }
+
+    function resetStopwatch() {
+      clearInterval(stopwatchIntervalId);
+      stopwatchIntervalId = null;
+      stopwatchElapsed = 0;
+      stopwatchStartedAt = 0;
+      updateStopwatch();
     }
 
     function parseSafeInt(value, min, max, fallback) {
@@ -567,7 +931,7 @@
       const seconds = parseSafeInt(secondsInput.value, 0, 59, DEFAULT_DURATION.seconds);
       const nextDuration = { hours, minutes, seconds };
       if (toTotalSeconds(nextDuration) === 0) {
-        nextDuration.minutes = 1;
+        nextDuration.seconds = 1;
       }
 
       selectedDuration = nextDuration;
@@ -578,30 +942,127 @@
       stopAlarmLoop();
       stopBackgroundAudio();
       remaining = toTotalSeconds(selectedDuration);
+      upsertSelectedTimer();
       updateView();
     }
 
-    function saveIntervals() {
-      intervalMinutes.focus = parseSafeInt(focusMinutesInput.value, 1, 180, DEFAULT_INTERVALS.focus);
-      intervalMinutes.short = parseSafeInt(shortMinutesInput.value, 1, 60, DEFAULT_INTERVALS.short);
-      intervalMinutes.long = parseSafeInt(longMinutesInput.value, 1, 120, DEFAULT_INTERVALS.long);
-      alarmDurationSeconds = parseSafeInt(alarmDurationInput.value, 5, 600, 30);
+    function getTimerFromInputs(timerId = editingTimerId || selectedTimerId || Date.now()) {
+      const hours = parseSafeInt(hoursInput.value, 0, 23, DEFAULT_DURATION.hours);
+      const minutes = parseSafeInt(minutesInput.value, 0, 59, DEFAULT_DURATION.minutes);
+      const seconds = parseSafeInt(secondsInput.value, 0, 59, DEFAULT_DURATION.seconds);
+      const duration = { hours, minutes, seconds };
+      if (toTotalSeconds(duration) === 0) {
+        duration.seconds = 1;
+      }
 
-      focusMinutesInput.value = String(intervalMinutes.focus);
-      shortMinutesInput.value = String(intervalMinutes.short);
-      longMinutesInput.value = String(intervalMinutes.long);
-      alarmDurationInput.value = String(alarmDurationSeconds);
+      hoursInput.value = String(duration.hours);
+      minutesInput.value = String(duration.minutes);
+      secondsInput.value = String(duration.seconds);
 
-      applyModeDuration(currentMode);
+      return {
+        id: timerId,
+        duration,
+        totalSeconds: toTotalSeconds(duration)
+      };
+    }
+
+    function selectTimer(timer) {
+      selectedTimerId = timer.id;
+      editingTimerId = null;
+      selectedDuration = { ...timer.duration };
+      remaining = timer.remaining ?? timer.totalSeconds;
+      hoursInput.value = String(timer.duration.hours);
+      minutesInput.value = String(timer.duration.minutes);
+      secondsInput.value = String(timer.duration.seconds);
+      stopTimer();
+      renderTimers();
+      updateView();
+    }
+
+    function renderTimers() {
+      timerList.innerHTML = "";
+
+      timers.forEach((timer) => {
+        const item = document.createElement("div");
+        item.className = `timer-item${timer.id === selectedTimerId ? " active" : ""}`;
+
+        const time = document.createElement("span");
+        time.textContent = formatTime(timer.totalSeconds);
+
+        const actions = document.createElement("div");
+
+        const selectBtn = document.createElement("button");
+        selectBtn.className = "btn-primary";
+        selectBtn.type = "button";
+        selectBtn.textContent = "Use";
+        selectBtn.addEventListener("click", () => selectTimer(timer));
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "btn-secondary icon-btn";
+        editBtn.type = "button";
+        editBtn.textContent = "✎";
+        editBtn.setAttribute("aria-label", `Edit ${formatTime(timer.totalSeconds)} timer`);
+        editBtn.title = `Edit ${formatTime(timer.totalSeconds)} timer`;
+        editBtn.addEventListener("click", () => {
+          editingTimerId = timer.id;
+          selectedTimerId = timer.id;
+          hoursInput.value = String(timer.duration.hours);
+          minutesInput.value = String(timer.duration.minutes);
+          secondsInput.value = String(timer.duration.seconds);
+          applyBtn.textContent = "Save Edit";
+          renderTimers();
+        });
+
+        actions.append(selectBtn, editBtn);
+        item.append(time, actions);
+        timerList.appendChild(item);
+      });
+
+      updateView();
+    }
+
+    function addTimer() {
+      editingTimerId = null;
+      const timer = getTimerFromInputs(Date.now());
+      timers.push(timer);
+      selectedTimerId = timer.id;
+      selectedDuration = { ...timer.duration };
+      remaining = timer.totalSeconds;
+      applyBtn.textContent = "Save Timer";
+      renderTimers();
+    }
+
+    function upsertSelectedTimer() {
+      const timer = getTimerFromInputs();
+
+      if (editingTimerId || timers.some((item) => item.id === timer.id)) {
+        timers = timers.map((item) => item.id === timer.id ? timer : item);
+      } else {
+        timers.push(timer);
+      }
+
+      selectedTimerId = timer.id;
+      editingTimerId = null;
+      selectedDuration = { ...timer.duration };
+      remaining = timer.totalSeconds;
+      applyBtn.textContent = "Save Timer";
+      renderTimers();
     }
 
     function onTick() {
       remaining -= 1;
+      if (selectedTimerId) {
+        timers = timers.map((timer) => timer.id === selectedTimerId ? { ...timer, remaining } : timer);
+      }
       updateView();
 
       if (remaining <= 0) {
         stopTimer();
         remaining = 0;
+        if (selectedTimerId) {
+          timers = timers.map((timer) => timer.id === selectedTimerId ? { ...timer, remaining: 0 } : timer);
+        }
+        renderTimers();
         updateView();
         startAlarmLoop();
       }
@@ -612,6 +1073,10 @@
       stopAlarmLoop();
       stopBackgroundAudio();
       remaining = toTotalSeconds(selectedDuration);
+      if (selectedTimerId) {
+        timers = timers.map((timer) => timer.id === selectedTimerId ? { ...timer, remaining: timer.totalSeconds } : timer);
+      }
+      renderTimers();
       updateView();
     });
 
@@ -628,7 +1093,9 @@
     themeBtn.addEventListener("click", () => {
       isNight = !isNight;
       document.body.classList.toggle("night", isNight);
-      themeBtn.textContent = isNight ? "Day Mode" : "Night Mode";
+      themeIcon.textContent = isNight ? "☾" : "☀";
+      themeBtn.setAttribute("aria-label", isNight ? "Switch to day mode" : "Switch to night mode");
+      themeBtn.setAttribute("aria-pressed", String(isNight));
     });
 
     bgSoundSelect.addEventListener("change", () => {
@@ -644,10 +1111,26 @@
       setBackgroundVolume();
     });
 
-    focusModeBtn.addEventListener("click", () => applyModeDuration("focus"));
-    shortModeBtn.addEventListener("click", () => applyModeDuration("short"));
-    longModeBtn.addEventListener("click", () => applyModeDuration("long"));
-    saveIntervalsBtn.addEventListener("click", saveIntervals);
+    alarmDurationInput.addEventListener("change", syncAlarmDuration);
+
+    alarmTabBtn.addEventListener("click", () => showTool("alarm"));
+    stopwatchTabBtn.addEventListener("click", () => showTool("stopwatch"));
+    timerTabBtn.addEventListener("click", () => showTool("timer"));
+    addTimerBtn.addEventListener("click", addTimer);
+    addClockAlarmBtn.addEventListener("click", addClockAlarm);
+    setClockAlarmBtn.addEventListener("click", setClockAlarm);
+    clearClockAlarmBtn.addEventListener("click", clearClockAlarm);
+    startStopwatchBtn.addEventListener("click", startStopwatch);
+    pauseStopwatchBtn.addEventListener("click", pauseStopwatch);
+    resetStopwatchBtn.addEventListener("click", resetStopwatch);
+
+    [clockHourInput, clockMinuteInput].forEach((input) => {
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          setClockAlarm();
+        }
+      });
+    });
 
     dingBtn.addEventListener("click", () => {
       unlockAudio();
@@ -663,6 +1146,9 @@
       if (intervalId) {
         return;
       }
+      if (!selectedTimerId) {
+        addTimer();
+      }
       stopAlarmLoop();
       if (remaining <= 0) {
         remaining = toTotalSeconds(selectedDuration);
@@ -676,8 +1162,11 @@
       stopBackgroundAudio();
     });
 
-    saveIntervals();
+    addTimer();
+    renderAlarms();
+    updateStopwatch();
     loadBackgroundTrack();
+    clockCheckIntervalId = setInterval(checkClockAlarm, 1000);
     ringtoneSelect.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         playRingtone();
